@@ -1,0 +1,18 @@
+plugins {
+    id 'java'
+}
+
+group 'org.example'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    def sparkVersion = '2.4.5'
+
+    compile group: 'org.apache.spark', name: 'spark-core_2.12', version: sparkVersion
+    compile group: 'org.apache.spark', name: 'spark-sql_2.12', version: sparkVersion
+
+}
