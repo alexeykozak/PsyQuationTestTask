@@ -1,7 +1,6 @@
 Sensor 0,100,temperature,Room 0 
-Sensor 0,200,test,Room 0
-Sensor 0,200,battery,Room 1
-Sensor 0,300,presence,Room 0
+Sensor 0,200,battery,Room 0 
+Sensor 0,300,presence,Room 0 
 Sensor 1,100,temperature,Room 0 
 Sensor 1,200,battery,Room 0 
 Sensor 1,300,presence,Room 0 
