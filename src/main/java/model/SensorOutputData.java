@@ -35,9 +35,9 @@ public class SensorOutputData implements Serializable {
     @JsonProperty("TempAvg")
     private String tempAvg;
     @JsonProperty("TempCnt")
-    private String tempCnt;
+    private Integer tempCnt;
     @JsonProperty("Presence")
     private Boolean presence;
     @JsonProperty("PresenceCnt")
-    private String presenceCnt;
+    private Integer presenceCnt;
 }

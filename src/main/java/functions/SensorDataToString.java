@@ -14,21 +14,21 @@ public class SensorDataToString implements Function<SensorData, String> {
 
         outputData.setTimeSlotStart(s.getTimeSlotStart());
         outputData.setLocation(s.getLocation());
-        outputData.setTempMin(safeToString(s.getTempMin(), ""));
-        outputData.setTempMax(safeToString(s.getTempMax(), ""));
-        outputData.setTempAvg(safeToString(s.getTempAvg(), ""));
-        outputData.setTempCnt(safeToString(s.getTempCnt(), "0"));
+        outputData.setTempMin(safeToString(s.getTempMin()));
+        outputData.setTempMax(safeToString(s.getTempMax()));
+        outputData.setTempAvg(safeToString(s.getTempAvg()));
+        outputData.setTempCnt(s.getTempCnt());
         outputData.setPresence(s.getPresence());
-        outputData.setPresenceCnt(safeToString(s.getPresenceCnt(), "0"));
+        outputData.setPresenceCnt(s.getPresenceCnt());
 
         return MAPPER.writeValueAsString(outputData);
     }
 
-    private String safeToString(Object o, String nullValue) {
+    private String safeToString(Object o) {
         if (o != null) {
             return o.toString();
         } else {
-            return nullValue;
+            return "";
         }
     }
 }
