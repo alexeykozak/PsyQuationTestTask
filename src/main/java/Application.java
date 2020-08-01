@@ -36,7 +36,7 @@ public class Application {
                 .getOrCreate();
 
         String dateFromString = spark.conf().get(DATE_FROM, "2018-03-21");
-        String dateToString = spark.conf().get(DATE_TO, "2018-03-23");
+        String dateToString = spark.conf().get(DATE_TO, "2018-03-24");
         String ds1InputPath = spark.conf().get(INPUT_DS1_PATH, "ds1.csv");
         String ds2InputPath = spark.conf().get(INPUT_DS2_PATH, "ds2.csv");
         String ds1OutputPath = spark.conf().get(OUTPUT_DS1_PATH, "output1");

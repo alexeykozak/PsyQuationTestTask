@@ -12,3 +12,7 @@ Also, this script uses spark-defaults.conf in spark-submit command. This config 
 You can define properties like start and end dates, input and output datasets.  
 
 `./launch.sh`
+
+### **Note**
+
+For correct results please set start and end dates before and after dates from the ds2 dataset. Data from the ds2 with date out of this range will be ignored.

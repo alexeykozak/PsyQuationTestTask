@@ -10,7 +10,7 @@ public class AggregateData implements Function2<SensorData, SensorData, SensorDa
         if (data1.getTempCnt() > 0 &&
                 data1.getTempCnt() > 0) {
             mergeTemp(data1, data2);
-        } else if (data2.getTempCnt() != null) {
+        } else if (data2.getTempCnt() > 0) {
             moveTemp(data2, data1);
         }
 

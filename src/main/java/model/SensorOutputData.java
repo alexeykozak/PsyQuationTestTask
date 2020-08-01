@@ -23,21 +23,21 @@ import java.time.ZonedDateTime;
         "PresenceCnt"
 })
 public class SensorOutputData implements Serializable {
-    @JsonProperty("TimeSlotStart")
+    @JsonProperty
     @JsonSerialize(using = ZonedDateTimeSerializer.class)
     private ZonedDateTime timeSlotStart;
-    @JsonProperty("Location")
+    @JsonProperty
     private String location;
-    @JsonProperty("TempMin")
+    @JsonProperty
     private String tempMin;
-    @JsonProperty("TempMax")
+    @JsonProperty
     private String tempMax;
-    @JsonProperty("TempAvg")
+    @JsonProperty
     private String tempAvg;
-    @JsonProperty("TempCnt")
+    @JsonProperty
     private Integer tempCnt;
-    @JsonProperty("Presence")
+    @JsonProperty
     private Boolean presence;
-    @JsonProperty("PresenceCnt")
+    @JsonProperty
     private Integer presenceCnt;
 }
