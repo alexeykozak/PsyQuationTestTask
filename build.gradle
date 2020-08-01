@@ -11,8 +11,16 @@ repositories {
 
 dependencies {
     def sparkVersion = '2.4.5'
+    def lombokVersion = '1.18.12'
 
-    compile group: 'org.apache.spark', name: 'spark-core_2.12', version: sparkVersion
-    compile group: 'org.apache.spark', name: 'spark-sql_2.12', version: sparkVersion
+    compile("org.apache.spark:spark-core_2.12:$sparkVersion") {
+        exclude group: 'com.fasterxml.jackson.core'
+    }
+
+    compile "org.apache.spark:spark-sql_2.12:$sparkVersion"
+
+    compileOnly "org.projectlombok:lombok:$lombokVersion"
+    annotationProcessor "org.projectlombok:lombok:$lombokVersion"
+
 
 }

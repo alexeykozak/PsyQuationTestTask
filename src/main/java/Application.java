@@ -1,9 +1,13 @@
+import functions.*;
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.RowFactory;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructType;
+import scala.Tuple2;
 import scala.collection.JavaConverters;
 import scala.collection.Seq;
 
@@ -26,8 +30,9 @@ public class Application {
 
         SparkSession spark = SparkSession
                 .builder()
-                .master("local[*]")
-                .config("spark.driver.bindAddress", "localhost")
+//                .master("local[*]")
+//                .config()
+//                .config()
                 .appName("TestTask")
                 .getOrCreate();
 
@@ -61,6 +66,7 @@ public class Application {
                 .withColumn("TempMin", when(col("TempMin").isNull(), "").otherwise(col("TempMin")))
                 .withColumn("TempMax", when(col("TempMax").isNull(), "").otherwise(col("TempMax")))
                 .withColumn("TempAvg", when(col("TempAvg").isNull(), "").otherwise(col("TempAvg")))
+                .withColumn("TempCnt", when(col("TempCnt").isNull(), "0").otherwise(col("TempCnt")))
                 .withColumn("Presence", when(col("PresenceCnt").$greater(0), true).otherwise(false));
 
         //set correct column order
@@ -82,12 +88,19 @@ public class Application {
                 .mode("overwrite")
                 .json("output1");
 
-//        try {
-//            System.in.read();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        spark.stop();
+
+        JavaRDD<String> rdd = JavaSparkContext.fromSparkContext(spark.sparkContext()).textFile("output1/*.json");
+
+        rdd
+                .map(new StringToSensorData())
+                .map(new TruncateTime())
+                .mapToPair(new PrepareToReduce())
+                .reduceByKey(new AggregateData())
+                .sortByKey()
+                .map(Tuple2::_2)
+                .map(new SensorDataToString())
+                .coalesce(1)
+                .saveAsTextFile("output2");
     }
 
     private static Dataset<Row> getDataDataset(SparkSession spark) {
