@@ -58,7 +58,6 @@ public class Application {
                 .withColumn("TimeSlotStart", col("TimeStamp.start"))
                 .withColumn("Temperature", when(col("ChannelType").isin("temperature"), col("Value")))
                 .withColumn("Temperature", (col("Temperature").minus(32)).divide(1.8)) //Convert co Celsius
-                .withColumn("Battery", when(col("ChannelType").isin("battery"), col("Value")))
                 .withColumn("Presence", when(col("ChannelType").isin("presence"), col("Value")).cast(DataTypes.IntegerType))
                 .withColumn("Location", col("LocationId"))
                 .drop("SensorId", "ChannelId", "Value", "ChannelType", "TimeStamp", "LocationId")

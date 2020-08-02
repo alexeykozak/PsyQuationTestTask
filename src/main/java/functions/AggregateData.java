@@ -8,14 +8,14 @@ public class AggregateData implements Function2<SensorData, SensorData, SensorDa
     @Override
     public SensorData call(SensorData data1, SensorData data2) {
         if (data1.getTempCnt() > 0 &&
-                data1.getTempCnt() > 0) {
+                data2.getTempCnt() > 0) {
             mergeTemp(data1, data2);
         } else if (data2.getTempCnt() > 0) {
             moveTemp(data2, data1);
         }
 
-        Integer presence1Cnt = data1.getPresenceCnt();
-        Integer presence2Cnt = data2.getPresenceCnt();
+        int presence1Cnt = data1.getPresenceCnt();
+        int presence2Cnt = data2.getPresenceCnt();
         int totalPresenceCnt = presence1Cnt + presence2Cnt;
         data1.setPresenceCnt(totalPresenceCnt);
 
@@ -41,8 +41,8 @@ public class AggregateData implements Function2<SensorData, SensorData, SensorDa
         Double temp2Min = data2.getTempMin();
         data1.setTempMin(temp2Min < temp1Min ? temp2Min : temp1Min);
 
-        Integer temp1Cnt = data1.getTempCnt();
-        Integer temp2Cnt = data2.getTempCnt();
+        int temp1Cnt = data1.getTempCnt();
+        int temp2Cnt = data2.getTempCnt();
 
         Double temp1Avg = data1.getTempAvg();
         Double temp2Avg = data2.getTempAvg();

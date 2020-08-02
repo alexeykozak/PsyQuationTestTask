@@ -18,7 +18,7 @@ public class SensorDataToString implements Function<SensorData, String> {
         outputData.setTempMax(safeToString(s.getTempMax()));
         outputData.setTempAvg(safeToString(s.getTempAvg()));
         outputData.setTempCnt(s.getTempCnt());
-        outputData.setPresence(s.getPresence());
+        outputData.setPresence(s.isPresence());
         outputData.setPresenceCnt(s.getPresenceCnt());
 
         return MAPPER.writeValueAsString(outputData);

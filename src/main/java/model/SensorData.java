@@ -24,9 +24,9 @@ public class SensorData implements Serializable {
     @JsonProperty("TempAvg")
     private Double tempAvg;
     @JsonProperty("TempCnt")
-    private Integer tempCnt;
+    private int tempCnt;
     @JsonProperty("Presence")
-    private Boolean presence;
+    private boolean presence;
     @JsonProperty("PresenceCnt")
-    private Integer presenceCnt;
+    private int presenceCnt;
 }
