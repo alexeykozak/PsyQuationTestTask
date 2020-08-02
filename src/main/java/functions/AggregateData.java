@@ -2,8 +2,9 @@ package functions;
 
 import model.SensorData;
 import org.apache.spark.api.java.function.Function2;
+import org.apache.spark.api.java.function.ReduceFunction;
 
-public class AggregateData implements Function2<SensorData, SensorData, SensorData> {
+public class AggregateData implements Function2<SensorData, SensorData, SensorData>, ReduceFunction<SensorData> {
 
     @Override
     public SensorData call(SensorData data1, SensorData data2) {

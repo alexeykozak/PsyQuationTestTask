@@ -4,8 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import model.SensorData;
 import model.SensorOutputData;
 import org.apache.spark.api.java.function.Function;
+import org.apache.spark.api.java.function.MapFunction;
 
-public class SensorDataToString implements Function<SensorData, String> {
+public class SensorDataToString implements Function<SensorData, String>, MapFunction<SensorData, String> {
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     @Override

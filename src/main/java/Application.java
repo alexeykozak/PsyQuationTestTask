@@ -1,10 +1,9 @@
 import functions.*;
+import model.SensorData;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.RowFactory;
-import org.apache.spark.sql.SparkSession;
+import org.apache.spark.api.java.function.MapFunction;
+import org.apache.spark.sql.*;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructType;
 import scala.Tuple2;
@@ -34,6 +33,7 @@ public class Application {
                 .master("local[*]")
                 .appName("TestTask")
                 .getOrCreate();
+        spark.sparkContext().hadoopConfiguration().set("parquet.enable.summary-metadata", "false");
 
         String dateFromString = spark.conf().get(DATE_FROM, "2018-03-21");
         String dateToString = spark.conf().get(DATE_TO, "2018-03-24");
@@ -51,57 +51,28 @@ public class Application {
 
         Dataset<Row> ds1 = getMetaDataset(spark, ds1InputPath);
         Dataset<Row> ds2 = getDataDataset(spark, ds2InputPath);
-        Dataset<Row> dates = getDatesDataset(spark, startDate, endDate);
+        Dataset<Row> datesRow = getDatesDataset(spark, startDate, endDate);
 
-        Dataset<Row> output1 = ds2.join(ds1, toSeq("SensorId", "ChannelId"), "left")
+        Dataset<SensorData> dates = datesRow.map(new RowDatesToSensorData(), Encoders.javaSerialization(SensorData.class));
+
+        Dataset<SensorData> output1 = ds2.join(ds1, toSeq("SensorId", "ChannelId"), "left")
                 .withColumn("TimeStamp", window(col("TimeStamp"), "15 minutes"))
-                .withColumn("TimeSlotStart", col("TimeStamp.start"))
-                .withColumn("Temperature", when(col("ChannelType").isin("temperature"), col("Value")))
-                .withColumn("Temperature", (col("Temperature").minus(32)).divide(1.8)) //Convert co Celsius
-                .withColumn("Presence", when(col("ChannelType").isin("presence"), col("Value")).cast(DataTypes.IntegerType))
-                .withColumn("Location", col("LocationId"))
-                .drop("SensorId", "ChannelId", "Value", "ChannelType", "TimeStamp", "LocationId")
-                .groupBy(col("TimeSlotStart"), col("Location"))
-                .agg(
-                        round(min("Temperature"), 2).alias("TempMin"),
-                        round(max("Temperature"), 2).alias("TempMax"),
-                        round(avg("Temperature"), 2).alias("TempAvg"),
-                        count("Temperature").alias("TempCnt"),
-                        sum(col("Presence")).alias("PresenceCnt")
-                );
-
-
-        output1 = dates
-                .join(output1, toSeq("TimeSlotStart", "Location"), "left_outer")
-
-                .withColumn("PresenceCnt", when(col("PresenceCnt").isNull(), 0).otherwise(col("PresenceCnt")))
-                .withColumn("TempMin", when(col("TempMin").isNull(), "").otherwise(col("TempMin")))
-                .withColumn("TempMax", when(col("TempMax").isNull(), "").otherwise(col("TempMax")))
-                .withColumn("TempAvg", when(col("TempAvg").isNull(), "").otherwise(col("TempAvg")))
-                .withColumn("TempCnt", when(col("TempCnt").isNull(), 0).otherwise(col("TempCnt")))
-                .withColumn("Presence", when(col("PresenceCnt").$greater(0), true).otherwise(false));
-
-        //set correct column order
-        output1 = output1.select(
-                col("TimeSlotStart"),
-                col("Location"),
-                col("TempMin"),
-                col("TempMax"),
-                col("TempAvg"),
-                col("TempCnt"),
-                col("Presence"),
-                col("PresenceCnt"))
-                .cache();
+                .withColumn("TimeStamp", col("TimeStamp.start"))
+                .na().drop()
+                .map(new RowToSensorData(), Encoders.javaSerialization(SensorData.class))
+                .union(dates)
+                .groupByKey((MapFunction<SensorData, String>) sensorData -> sensorData.getTimeSlotStart().toString() + sensorData.getLocation(), Encoders.STRING())
+                .reduceGroups(new AggregateData())
+                .map((MapFunction<Tuple2<String, SensorData>, SensorData>) v1 -> v1._2, Encoders.javaSerialization(SensorData.class));
 
         output1
-                .orderBy("TimeSlotStart", "Location")
+                .map(new SensorDataToString(), Encoders.STRING())
+                .orderBy("value")
                 .coalesce(1)
-                .write()
-                .mode("overwrite")
-                .json(ds1OutputPath);
+                .rdd()
+                .saveAsTextFile(ds1OutputPath);
 
-
-        JavaRDD<String> rdd = JavaSparkContext.fromSparkContext(spark.sparkContext()).textFile(ds1OutputPath + "/*.json");
+        JavaRDD<String> rdd = JavaSparkContext.fromSparkContext(spark.sparkContext()).textFile(ds1OutputPath + "/part*");
 
         rdd
                 .map(new StringToSensorData())
@@ -144,8 +115,9 @@ public class Application {
         Dataset<Row> rooms = spark.createDataFrame(list, structType);
 
         return dates.crossJoin(rooms)
-                .withColumn("TimeSlotStart", from_unixtime(col("date"))).drop(col("date"))
-                .withColumn("Location", col("Location"));
+                .withColumn("TimeSlotStart", from_unixtime(col("date")).cast(DataTypes.TimestampType))
+                .withColumn("Location", col("Location"))
+                .drop(col("date"));
     }
 
 
